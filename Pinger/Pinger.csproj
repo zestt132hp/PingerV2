@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>0</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="castle.core" Version="4.4.0" />
+    <PackageReference Include="microsoft.extensions.commandlineutils" Version="1.1.1" />
+    <PackageReference Include="microsoft.extensions.configuration.binder" Version="2.2.4" />
+    <PackageReference Include="microsoft.extensions.configuration.commandline" Version="2.2.0" />
+    <PackageReference Include="microsoft.extensions.configuration.json" Version="2.2.0" />
+    <PackageReference Include="ninject" Version="3.3.4" />
+    <PackageReference Include="ninject.extensions.factory" Version="3.3.2" />
+    <PackageReference Include="nlog" Version="4.6.3" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,64 @@
+{
+  "hosts": {
+    "Section_Http": [
+      {
+        "http/https": {
+          "HostName": "https://ya.ru",
+          "Interval": 1555,
+          "WebStatus": 200,
+          "ProtocolType": "http/https"
+        }
+      },
+      {
+        "http/https": {
+          "HostName": "https://metanit.com",
+          "Interval": 300,
+          "WebStatus": 200,
+          "ProtocolType": "http/https"
+        }
+      },
+      {
+        "http/https": {
+          "HostName": "http://google.com",
+          "WebStatus": "200",
+          "Interval": 100,
+          "ProtocolType": "http/https"
+        }
+      }
+    ],
+    "Section_Tcp": [
+      {
+        "tcp/ip": {
+          "HostName": "localhost",
+          "Interval": 300,
+          "ProtocolType": "tcp/ip",
+          "Port": "8080"
+        }
+      },
+      {
+        "tcp/ip": {
+          "HostName": "8.8.8.8",
+          "Interval": 100,
+          "ProtocolType": "tcp/ip",
+          "Port": "808"
+        }
+      }
+    ],
+    "Section_Icmp": [
+      {
+        "icmp": {
+          "HostName": "www.google.com",
+          "Interval": 155,
+          "ProtocolType": "icmp"
+        }
+      },
+      {
+        "icmp": {
+          "HostName": "www.ya.ru",
+          "Interval": 200,
+          "ProtocolType": "icmp"
+        }
+      }
+    ]
+  }
+}
