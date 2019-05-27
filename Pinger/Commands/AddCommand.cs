@@ -8,9 +8,12 @@ namespace Pinger.Commands
 {
     public class AddCommand : ICommand
     {
-        private readonly List<string> _optionsCommand = new List<string>() {"--host", "--protocol", "--interval", "--option"};
+        private readonly List<string> _optionsCommand = new List<string>()
+            {"--host", "--protocol", "--interval", "--option"};
+
         private readonly IConfigurationWriter _config;
         private CommandLineApplication _app;
+
         public AddCommand(IConfigurationWriter writer)
         {
             _config = writer;
@@ -29,22 +32,32 @@ namespace Pinger.Commands
             _app.OnExecute(() =>
             {
                 if (args.Length > _optionsCommand.Count)
-                    args = args.Skip(1).ToArray();
-                /*
-                if (option.HasValue())
                 {
-                    Array.Resize(ref args, args.Length + 1);
-                    args[args.Length - 1] = option.Value();
-                }*/
+                    var inputsSkip = args.Length - _optionsCommand.Count;
+                    if (inputsSkip <= _optionsCommand.Count - inputsSkip)
+                    {
+                        args = args.Contains(_optionsCommand.Last())
+                            ? args.Skip(inputsSkip).ToArray()
+                            : args.Skip(inputsSkip + 1).ToArray();
+                    }
+                    else
+                    {
+                        args = args.Skip(0).ToArray();
+                    }
+
+                }
+
                 if (!_config.SaveInConfig(args))
                 {
                     Console.WriteLine("Попытка добавления протокола завершилась неудачей");
                     return 0;
                 }
+
                 Console.WriteLine("Протокол добавлен успешно");
                 return 1;
             });
         }
+
         public int Run(string[] args)
         {
             return 0;

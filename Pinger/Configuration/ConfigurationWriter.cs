@@ -8,30 +8,34 @@ using Pinger.Protocols;
 
 namespace Pinger.Configuration
 {
-    class ConfigurationWriter:IConfigurationWriter
+    class ConfigurationWriter : IConfigurationWriter
     {
         private readonly Dictionary<string, string> _commandMap = new Dictionary<string, string>()
         {
-            { "--host", "HostName" },
-            { "--protocol", "ProtocolType" },
-            { "--interval", "Interval" },
-            { "--option", "StatusCode" }
+            {"--host", "HostName"},
+            {"--protocol", "ProtocolType"},
+            {"--interval", "Interval"},
+            {"--option", "StatusCode"}
         };
+
         private IConfigurationRoot _config;
         private readonly IConfigurationBuilder _builder;
         private readonly IProtocolInfo _protocolInfo;
         private readonly IConfigurationReader _reader;
         private IProtocol _protocol;
         private string _hostFile;
-        public ConfigurationWriter(string hostFileName, IConfigurationBuilder builder, IProtocolInfo protocolInfo, IConfigurationReader reader)
+
+        public ConfigurationWriter(string hostFileName, IConfigurationBuilder builder, IProtocolInfo protocolInfo,
+            IConfigurationReader reader)
         {
-            if(string.IsNullOrEmpty(hostFileName))
+            if (string.IsNullOrEmpty(hostFileName))
                 throw new NullReferenceException(hostFileName);
             _hostFile = hostFileName;
             _protocolInfo = protocolInfo ?? throw new NullReferenceException(nameof(protocolInfo));
             _builder = builder ?? throw new NullReferenceException(nameof(builder));
             _reader = reader ?? throw new NullReferenceException(nameof(reader));
         }
+
         private bool ParseInputsArgs()
         {
             string tmp = _config["ProtocolType"];
@@ -52,6 +56,7 @@ namespace Pinger.Configuration
                 _protocol = _config.Get<EchoProtocol>();
                 return true;
             }
+
             return false;
         }
 
@@ -108,11 +113,6 @@ namespace Pinger.Configuration
             }
 
             return false;
-        }
-
-        public void CreateConfig()
-        {
-            throw new NotImplementedException();
         }
     }
 }

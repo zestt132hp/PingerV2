@@ -11,7 +11,7 @@ using Pinger.Logger;
 namespace Pinger.Protocols
 {
     [JsonObject("icmp")]
-    public class EchoProtocol:IProtocol
+    public class EchoProtocol : IProtocol
     {
         public string HostName { get; set; }
         public string ProtocolType { get; set; }
@@ -20,61 +20,19 @@ namespace Pinger.Protocols
 
         public int Interval { get; set; }
 
-        private readonly PingOptions _options;
-        private readonly IPHostEntry _ipHostEntry;
-        private readonly IPAddress _ipAddress;
+        private PingOptions _options;
+        private IPHostEntry _ipHostEntry;
+        private IPAddress _ipAddress;
         const int Timeout = 120;
-        public EchoProtocol(string host)
+
+        public async Task<RequestStatus> SendRequestAsync(ILogger logger)
         {
-            HostName = string.IsNullOrEmpty(host) ? host : "localhost";
-            _options = new PingOptions();
-            if (HostName != null) _ipHostEntry = Dns.GetHostEntry(HostName);
+            _ipHostEntry = Dns.GetHostEntry(HostName);
             _ipAddress = _ipHostEntry.AddressList.FirstOrDefault();
-            _options.DontFragment = true;
-        }
-
-        public EchoProtocol()
-        {
-        }
-
-        public RequestStatus SendRequest<T>(ILogger<Exception> logger)
-        {
-            var reply = default(PingReply);
-            try
+            _options = new PingOptions()
             {
-                var pingSender = new Ping();
-                var dataBytes = Encoding.UTF8.GetBytes(_message);
-                if (_ipAddress != null)
-                {
-                    reply = pingSender.Send(_ipAddress, Timeout, dataBytes, _options);
-                }
-                if (reply != null)
-                {
-                    var bytes = reply.Buffer;
-                    var responseData = Encoding.UTF8.GetString(dataBytes, 0, bytes.Length);
-                    Message = $"Получены данные {responseData}";
-                    return new RequestStatus(reply.Status == IPStatus.Success);
-                }
-                else
-                {
-                    Message = $"Полученные даннные отсутвуют {nameof(reply)}";
-                    return new RequestStatus(false);
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Write(ex);
-                Message = $"Ошибка при получении данных";
-                return new RequestStatus(false);
-            }
-        }
-        RequestStatus IProtocol.SendRequestAsync(ILogger<Exception> logger)
-        {
-            return Task.WhenAll(SendRequestAsync(logger)).Result.FirstOrDefault();
-        }
-
-        private async Task<RequestStatus> SendRequestAsync(ILogger<Exception> logger)
-        {
+                DontFragment = true
+            };
             using (Ping ping = new Ping())
             {
                 var dataBytes = Encoding.UTF8.GetBytes(_message);
@@ -95,6 +53,7 @@ namespace Pinger.Protocols
                         logger?.Write(e);
                     }
                 }
+
                 return new RequestStatus(false);
             }
         }

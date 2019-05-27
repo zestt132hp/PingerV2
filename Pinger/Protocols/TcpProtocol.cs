@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,38 +20,33 @@ namespace Pinger.Protocols
         private static String _message = "DataTest";
         private String _host;
 
-        public TcpProtocol()
-        {
-        }
-
         public int Port
         {
             get => _port;
             set => _port = value < 0 ? 80 : value;
-        }        
+        }
+
         public string ProtocolType { get; set; }
         public string Message { get; private set; } = _message;
+
         public string HostName
         {
             get => _host;
             set => TryHost(value);
         }
-        public int Interval { get; set; }
 
-        public TcpProtocol(string hostName)
-        {
-            TryHost(hostName);
-        }
+        public int Interval { get; set; }
 
         private void TryHost(string hostName)
         {
-            if(string.IsNullOrEmpty(hostName))
+            if (string.IsNullOrEmpty(hostName))
                 throw new NullReferenceException(nameof(hostName));
             if (hostName.ToLowerInvariant().Equals("localhost"))
             {
                 _host = hostName;
                 return;
             }
+
             if (hostName.Contains(":") && new Regex(RegExpressionForAddress + RegExForPort).IsMatch(hostName))
             {
                 string[] array = hostName.Split(':');
@@ -67,34 +61,7 @@ namespace Pinger.Protocols
             }
         }
 
-        public RequestStatus SendRequest<T>(ILogger<Exception> logger)
-        {
-            try
-            {
-                using (TcpClient client = new TcpClient())
-                {
-                    client.Connect(hostname: HostName, port: Port);
-                    var bytes = Encoding.ASCII.GetBytes(Message);
-                    var networkStream = client.GetStream();
-                    networkStream.Write(bytes, 0, bytes.Length);
-                    bytes = new byte[8];
-                    var readBytes = networkStream.Read(bytes, 0, bytes.Length);
-                    var responseData = Encoding.ASCII.GetString(bytes, 0, networkStream.Read(bytes, 0, readBytes));
-                    Message = responseData;
-                    if (readBytes > 0)
-                    {
-                        return new RequestStatus(isSuccess: true);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                logger.Write(new Exception($"{HostName}:{Port} || {e.Message}"));
-                Message = "Fail";
-            }
-            return new RequestStatus(isSuccess: false);
-        }
-        private async Task<RequestStatus> SendRequestAsync(ILogger<Exception> logger)
+        public async Task<RequestStatus> SendRequestAsync(ILogger logger)
         {
             if (logger == null) throw new ArgumentNullException(nameof(logger));
             var data = Encoding.UTF8.GetBytes(_message);
@@ -112,14 +79,12 @@ namespace Pinger.Protocols
                             $"Received message {string.Concat(Encoding.UTF8.GetDecoder().GetChars(buffer, 0, bytesRead, charBuffer, 0))}";
                         return new RequestStatus(true);
                     }
-                    else
-                        return new RequestStatus(false);
                 }
                 catch (Exception e)
                 {
                     logger.Write(e);
-                    return new RequestStatus(false);
                 }
+                return new RequestStatus(false);
             }
         }
 
@@ -131,12 +96,6 @@ namespace Pinger.Protocols
                 Task.WhenAll(stream.WriteAsync(BitConverter.GetBytes(data.Length), 0, 4),
                     stream.WriteAsync(data, 0, data.Length));
             return stream;
-        }
-
-        RequestStatus IProtocol.SendRequestAsync(ILogger<Exception> logger)
-        {
-            Task.WaitAll(Task.WhenAll(SendRequestAsync(logger)));
-            return Task.WhenAll(SendRequestAsync(logger)).Result.FirstOrDefault();
         }
     }
 }

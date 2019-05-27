@@ -5,7 +5,7 @@ using NLog.Targets;
 
 namespace Pinger.Logger
 {
-    public sealed class NlogConfiguration: IConfigurationNlog
+    public sealed class NlogConfiguration : IConfigurationNlog
     {
         public LoggingConfiguration GetLogConfiguration(String logName)
         {
@@ -19,7 +19,7 @@ namespace Pinger.Logger
             fileTarget.FileName = "${basedir}/logs/" + $"{logName}.txt";
             LoggingRule rule = new LoggingRule("*", LogLevel.Info, consoleTarget);
             config.LoggingRules.Add(rule);
-            LoggingRule rule3 =new LoggingRule("*", LogLevel.Debug, fileTarget);
+            LoggingRule rule3 = new LoggingRule("*", LogLevel.Debug, fileTarget);
             config.LoggingRules.Add(rule3);
             FileTarget erorrTarget = new FileTarget(logName + "_errors");
             config.AddTarget("file", erorrTarget);

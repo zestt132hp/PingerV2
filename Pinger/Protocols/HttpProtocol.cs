@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -20,21 +19,6 @@ namespace Pinger.Protocols
         public string ProtocolType { get; set; }
         public string Message { get; private set; }
 
-        public HttpProtocol(string hostname, HttpStatusCode statusCode)
-        {
-            _code = statusCode;
-            TryHost(hostname);
-        }
-
-        public HttpProtocol(string hostName)
-        {
-            TryHost(hostName);
-        }
-
-        public HttpProtocol()
-        {
-        }
-
         private void TryHost(string hostName)
         {
             if (string.IsNullOrEmpty(hostName))
@@ -44,38 +28,19 @@ namespace Pinger.Protocols
                 _host = "http://" + hostName;
                 return;
             }
+
             _host = hostName;
         }
-        public string HostName {
+
+        public string HostName
+        {
             get => _host;
             set => TryHost(value);
         }
 
         public int Interval { get; set; }
-        public RequestStatus SendRequest<T>(ILogger<Exception> logger) 
-        {
-            try
-            {
-                using (HttpWebResponse resp = (HttpWebResponse) WebRequest.Create(new Uri(HostName)).GetResponse())
-                {
-                    Message = $"Получен ответ: {resp.StatusDescription}";
-                    return new RequestStatus(resp.StatusCode == _code);
-                }
-            }
-            catch (WebException e)
-            {
-                Message = "Неудачный запрос |" + e.Message;
-                return new RequestStatus(false);
-            }
-            catch (Exception e)
-            {
-                logger.Write(new Exception(HostName + "||" + e.Message));
-                Message = $"Ошибка при соединении";
-                return new RequestStatus(false);
-            }
-        }
 
-        private async Task<RequestStatus> SendRequestAsync(ILogger<Exception> logger)
+        public async Task<RequestStatus> SendRequestAsync(ILogger logger)
         {
             using (HttpClient client = new HttpClient())
             {
@@ -89,13 +54,9 @@ namespace Pinger.Protocols
                 {
                     logger?.Write(e);
                 }
+
                 return new RequestStatus(false);
             }
-        }
-
-        RequestStatus IProtocol.SendRequestAsync(ILogger<Exception> logger)
-        {
-            return Task.WhenAll(SendRequestAsync(logger)).Result.FirstOrDefault();
         }
     }
 }

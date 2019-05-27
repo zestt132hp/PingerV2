@@ -3,7 +3,7 @@ using NLog;
 
 namespace Pinger.Logger
 {
-    class Logger:ILogger<String>
+    public class Logger : ILogger
     {
         private readonly NLog.Logger _logger;
 
@@ -13,10 +13,16 @@ namespace Pinger.Logger
             _logger = LogManager.GetCurrentClassLogger();
             LogManager.Configuration = configuration.GetLogConfiguration(name);
         }
+
         public void Write(String value)
         {
             _logger.Info(value);
             _logger.Debug(value);
+        }
+
+        public void Write(Exception exc)
+        {
+            _logger.Error(exc);
         }
     }
 }

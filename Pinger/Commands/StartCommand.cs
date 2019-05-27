@@ -8,6 +8,7 @@ namespace Pinger.Commands
     {
         private IPingerProcessor _processor;
         private CommandLineApplication _app;
+
         public StartCommand(IPingerProcessor processor)
         {
             _processor = processor;
@@ -34,6 +35,7 @@ namespace Pinger.Commands
                 {
                     throw new ArgumentNullException(nameof(args));
                 }
+
                 return 1;
             }
             catch (Exception e)

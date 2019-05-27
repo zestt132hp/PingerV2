@@ -16,49 +16,37 @@ namespace Pinger.Commands
         private readonly Configuration.IConfigurationReader _reader;
         private readonly IPingerProcessor _processor;
         private readonly IKernel _kernel = new StandardKernel(new PingerRegistrationModules());
-        //private readonly ICommandFactory _commandFactory;
+        private static readonly string HostFileName = "hosts.json";
+        private static readonly string SectionName = "hosts:Section({0})";
 
         public RootCommand(CommandLineApplication app)
         {
             var configurationBuilder = _kernel.Get<IConfigurationBuilder>();
-            var settings = configurationBuilder.AddJsonFile("appconfig.json").Build().GetSection(nameof(AppSettings)).Get<AppSettings>();
-            var eLog = _kernel.Get<ILogger<Exception>>();
-            var sLog = _kernel.Get<ILogger<string>>();
             var protocolInfo = _kernel.Get<IProtocolInfo>();
-            var hostFileName = new ConstructorArgument("hostFileName", settings.HostFileName);
-            var sectionName = new ConstructorArgument("sectionFormat", settings.SectionName);
+            var hostFileName = new ConstructorArgument("hostFileName", HostFileName);
+            var sectionName = new ConstructorArgument("sectionFormat", SectionName);
             var builder = new ConstructorArgument("_builder", configurationBuilder);
             var info = new ConstructorArgument("protocolInfo", protocolInfo);
             _reader = _kernel.Get<Configuration.IConfigurationReader>(hostFileName, sectionName, builder);
             var read = new ConstructorArgument("reader", _reader);
             _writer = _kernel.Get<Configuration.IConfigurationWriter>(hostFileName, builder, info, read);
-            var factory = _kernel.Get<IPingerFactory>();
-            _processor = _kernel.Get<IPingerProcessor>(
-                new ConstructorArgument("confWorker", _reader),
-                new ConstructorArgument("factory", factory), 
-                new ConstructorArgument("eLog", eLog),
-                new ConstructorArgument("sLog", sLog));
-            //IParameter paramConf = new Parameter("writer", _writer, true);
-            ////IParameter paramRead = new Parameter("reader", _reader, true);
-            //IParameter procParam = new Parameter("processor", _processor, true);
-            //_commandFactory = _kernel.Get<ICommandFactory>(paramConf, paramRead, procParam);
+            _processor = _kernel.Get<IPingerProcessor>(new ConstructorArgument("confWorker", _reader),
+                new ConstructorArgument("log", _kernel.Get<ILogger>()));
             _app = app;
             _app.HelpOption("-?|-h|--help");
         }
+
         public void Configure(string[] args)
         {
-             _app.Command("remove", (x)=>new DeleteCommand(_writer).ConfigCommand(x, args));
-             _app.Command("add", (x) => new AddCommand(_writer).ConfigCommand(x, args));
-             var commandShow = _app.Command("show", (x) => new ShowCommand(_reader).ConfigCommand(x, args));
-            //не работает
-            /*_app.Command("remove", (x) => commandFactory.CreateDeleteCommand(writer).ConfigCommand(x, args));
-            _app.Command("add", (x) => commandFactory.CreateAddCommand(writer).ConfigCommand(x, args));
-            _app.Command("show", (x) => commandFactory.CreateShowCommand(reader).ConfigCommand(x, args));
-            _app.Command("ping", (x) => { commandFactory.CreateStartCommand(processor).ConfigCommand(x, args); });*/
-            CommandOption remove = _app.Option("--remove|-r", "remove host from file with hosts", CommandOptionType.NoValue);
-            CommandOption addOption = _app.Option("--add|-a", "add host in hosts file", CommandOptionType.NoValue);
-            CommandOption show = _app.Option("-s|--show", "Display the hosts from collection", CommandOptionType.NoValue);
-            CommandOption start = _app.Option("-p|--ping", "Begin ping process", CommandOptionType.SingleValue);
+            _app.Command("remove", (x) => new DeleteCommand(_writer).ConfigCommand(x, args));
+            _app.Command("add", (x) => new AddCommand(_writer).ConfigCommand(x, args));
+            var commandShow = _app.Command("show", (x) => new ShowCommand(_reader).ConfigCommand(x, args));
+            CommandOption remove = _app.Option("-r|--remove", "remove host from file with hosts",
+                CommandOptionType.NoValue);
+            CommandOption addOption = _app.Option("-a|--add", "add host in hosts file", CommandOptionType.NoValue);
+            CommandOption show = _app.Option("-s|--show", "Display the hosts from collection",
+                CommandOptionType.NoValue);
+            CommandOption start = _app.Option("-p|--ping", "Begin ping process", CommandOptionType.NoValue);
             _app.OnExecute(() =>
             {
                 if (addOption.HasValue())
@@ -69,9 +57,11 @@ namespace Pinger.Commands
                     return commandShow.Invoke();
                 if (start.HasValue())
                 {
-                    var z = _app.Command("ping", (x) => { new StartCommand(_processor).ConfigCommand(x, start.Value()); });
+                    var z = _app.Command("ping",
+                        (x) => { new StartCommand(_processor).ConfigCommand(x, start.Value()); });
                     z.Invoke();
                 }
+
                 return 0;
             });
             if (args.Length == 0)
@@ -81,6 +71,7 @@ namespace Pinger.Commands
                 Run(args);
             }
         }
+
         private void Run(string[] args)
         {
             try
@@ -93,5 +84,5 @@ namespace Pinger.Commands
                 _app.ShowHelp();
             }
         }
-    }   
+    }
 }
