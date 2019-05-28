@@ -1,15 +1,16 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Pinger.Protocols;
 using ILogger = Pinger.Logger.ILogger;
 
-namespace PingerTest.Pinger
+namespace PingerTest.Protocols
 {
     [TestClass]
     public class ProtocolTests
     {
         [TestMethod]
-        public void ProtocolSendRequestTest()
+        public void ProtocolSendRequestSyncTest()
         {
             //Arrange
             var moq = new Mock<IProtocol>();
@@ -24,6 +25,27 @@ namespace PingerTest.Pinger
             //Assert
             Assert.IsNotNull(pinger.Protocol);
             Assert.IsFalse(status.GetStatus);
+        }
+
+        [TestMethod]
+        public async Task ProtocolSendRequestASyncTestAsync()
+        {
+            //Arrange
+            var moq = new Mock<IProtocol>();
+            var log = new Mock<ILogger>();
+            moq.SetupSequence((x) => x.SendRequestAsync(log.Object)).Returns(async () =>
+            {
+                await Task.Yield();
+                return new RequestStatus(true);
+            });
+            global::Pinger.PingerModule.Pinger pinger = new global::Pinger.PingerModule.Pinger(moq.Object, log.Object);
+
+            //Act
+            var result = await pinger.Protocol.SendRequestAsync(log.Object);
+
+            //Assert
+            Assert.IsNotNull(pinger.Protocol);
+            Assert.IsTrue(result.GetStatus);
         }
         [TestMethod]
         public void ProtocolPropertyTest()

@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Pinger.Logger;
 using Pinger.PingerModule;
@@ -48,11 +47,11 @@ namespace PingerTest.Pinger
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void PingerObjTest()
         {
             //Arrange
-            HttpProtocol protocol = new HttpProtocol();
+            int defaultInterval = 5;
+            HttpProtocol protocol = new HttpProtocol(){Interval = -10};
             var logger = new Mock<ILogger>();
             var mock = new Mock<global::Pinger.PingerModule.Pinger>(protocol, logger.Object);
 
@@ -63,7 +62,7 @@ namespace PingerTest.Pinger
 
             //Assert
             Assert.AreSame(protocol, realProtocol);
-            Assert.AreEqual(0, mock.Object.Interval);
+            Assert.AreEqual(defaultInterval, mock.Object.Interval);
         }
     }
 }

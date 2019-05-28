@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -19,6 +20,8 @@ namespace Pinger.Protocols
         private Int32 _port;
         private static String _message = "DataTest";
         private String _host;
+        private string _protocolType = "tcp/ip";
+        private int _interval = 5;
 
         public int Port
         {
@@ -35,7 +38,26 @@ namespace Pinger.Protocols
             set => TryHost(value);
         }
 
-        public int Interval { get; set; }
+        public int Interval
+        {
+            get => _interval;
+            set => _interval = value > 0 ? value : _interval;
+        }
+
+        private void TryProtocolType(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                throw new NullReferenceException("Тип протокола не может быть пустым");
+            if (!_protocolType.Equals(value))
+            {
+                var constType = _protocolType.Split('/');
+                var tmp = value.Split('/');
+                if (!tmp.Contains(constType.First()) || !tmp.Contains(constType.Last()))
+                    throw new ArgumentException("Неверно указан тип протокола");
+            }
+
+            _protocolType = value;
+        }
 
         private void TryHost(string hostName)
         {
@@ -84,6 +106,7 @@ namespace Pinger.Protocols
                 {
                     logger.Write(e);
                 }
+
                 return new RequestStatus(false);
             }
         }

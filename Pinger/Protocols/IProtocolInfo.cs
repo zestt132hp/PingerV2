@@ -1,6 +1,6 @@
 ﻿namespace Pinger.Protocols
 {
-    interface IProtocolInfo
+    public interface IProtocolInfo
     {
         string GetJsonAttribute<T>();
     }

@@ -8,7 +8,7 @@ using Pinger.Protocols;
 
 namespace Pinger.Configuration
 {
-    class ConfigurationWriter : IConfigurationWriter
+    public class ConfigurationWriter : IConfigurationWriter
     {
         private readonly Dictionary<string, string> _commandMap = new Dictionary<string, string>()
         {
@@ -23,7 +23,7 @@ namespace Pinger.Configuration
         private readonly IProtocolInfo _protocolInfo;
         private readonly IConfigurationReader _reader;
         private IProtocol _protocol;
-        private string _hostFile;
+        private readonly string _hostFile;
 
         public ConfigurationWriter(string hostFileName, IConfigurationBuilder builder, IProtocolInfo protocolInfo,
             IConfigurationReader reader)
@@ -38,6 +38,8 @@ namespace Pinger.Configuration
 
         private bool ParseInputsArgs()
         {
+            if (_config == null)
+                return false;
             string tmp = _config["ProtocolType"];
             if (_protocolInfo.GetJsonAttribute<HttpProtocol>().Contains(tmp))
             {
@@ -102,6 +104,8 @@ namespace Pinger.Configuration
 
         public bool RemoveFromConfig(int index)
         {
+            if (_reader.GetReadsProtocols() == null)
+                return false;
             if (_reader.GetReadsProtocols().ContainsKey(index))
             {
                 if (_reader.GetReadsProtocols().Remove(index))

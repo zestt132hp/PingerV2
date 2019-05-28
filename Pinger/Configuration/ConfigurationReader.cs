@@ -8,11 +8,11 @@ using Pinger.Protocols;
 
 namespace Pinger.Configuration
 {
-    class ConfigurationReader : IConfigurationReader
+    public class ConfigurationReader : IConfigurationReader
     {
         private readonly string _sectionFormat;
         private readonly Dictionary<int, IProtocol> _dictionaryHosts = new Dictionary<int, IProtocol>();
-        public IConfigurationRoot Configuration { get; }
+        private IConfigurationRoot Configuration { get; }
 
         public ConfigurationReader(string hostFileName, string sectionFormat, IConfigurationBuilder builder)
         {
